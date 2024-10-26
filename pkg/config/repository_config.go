@@ -51,7 +51,7 @@ var (
 		"Description": `.*`,
 	}
 	DefaultTokenSeparators = []string{"-", "_"}
-	Providers              = []string{"github", "jira", "linear"}
+	Providers              = []string{"github", "jira", "linear", "agility"}
 	DefaultProvider        = "github"
 	ErrInvalidProvider     = errors.New("Invalid provider")
 )
@@ -219,13 +219,15 @@ func (c *PullRequestConfig) SetDefaults() {
 }
 
 type CheckoutNewConfig struct {
-	Jira   CheckoutNewJiraConfig   `yaml:"jira"`
-	GitHub CheckoutNewGitHubConfig `yaml:"github"`
+	Jira    CheckoutNewJiraConfig    `yaml:"jira"`
+	GitHub  CheckoutNewGitHubConfig  `yaml:"github"`
+	Agility CheckoutNewAgilityConfig `yaml:"agility"`
 }
 
 func (c *CheckoutNewConfig) SetDefaults() {
 	c.Jira.SetDefaults()
 	c.GitHub.SetDefaults()
+	c.Agility.SetDefaults()
 }
 
 type CheckoutNewJiraConfig struct {
@@ -247,6 +249,16 @@ type CheckoutNewGitHubConfig struct {
 }
 
 func (c *CheckoutNewGitHubConfig) SetDefaults() {
+	if len(c.IssueListFlags) == 0 {
+		c.IssueListFlags = []string{"--state", "open", "--assignee", "@me"}
+	}
+}
+
+type CheckoutNewAgilityConfig struct {
+	IssueListFlags []string `yaml:"issue_list_flags"`
+}
+
+func (c *CheckoutNewAgilityConfig) SetDefaults() {
 	if len(c.IssueListFlags) == 0 {
 		c.IssueListFlags = []string{"--state", "open", "--assignee", "@me"}
 	}

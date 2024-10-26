@@ -38,6 +38,8 @@ func NewProviderCmd() *cobra.Command {
 				- %[1]sendpoint%[1]s is your jira server: https://<your-jira-server>.atlassian.net
 			- linear:
 				- %[1]sapi_key%[1]s can be created at https://linear.app/settings/api
+			- agility:
+				- %[1]sapi_key%[1]s can be created at https://docs.digital.ai/bundle/agility-onlinehelp/page/Content/DeveloperLibrary/Access_Token_Authentication.htm
 		`, "`"),
 		Example: heredoc.Doc(`
 			// Setup a jira provider:
@@ -45,6 +47,9 @@ func NewProviderCmd() *cobra.Command {
 
 			// Setup a linear provider:
 			$ gh prx setup provider linear --api-key <api-key>
+		
+			// Setup a agility provider:
+			$ gh prx setup provider agility --endpoint <endpoint> --api-key <api-key>
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
@@ -85,6 +90,13 @@ func setupProvider(_ context.Context, provider string, opts *ProviderOpts) error
 		}
 
 		cfg.LinearConfig.APIKey = opts.APIKey
+	case "agility":
+		if opts.Endpoint == "" || opts.APIKey == "" {
+			return errors.New("endpoint, api-key are required for the agility provider setup")
+		}
+
+		cfg.AgilityConfig.Endpoint = opts.Endpoint
+		cfg.AgilityConfig.APIKey = opts.APIKey
 	default:
 		return config.ErrInvalidProvider
 	}

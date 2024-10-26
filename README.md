@@ -192,6 +192,12 @@ To setup, run `gh prx setup provider linear --api-key <api-key>`.
 
 Alternatively, set the `LINEAR_API_KEY` env var.
 
+### Linear
+
+To setup, run `gh prx setup provider agility --api-key <api-key>`.
+
+Alternatively, set the `AGILITY_API_KEY` env var.
+
 ## Installation
 
 1. Install the `gh` CLI - see the [installation](https://github.com/cli/cli#installation)

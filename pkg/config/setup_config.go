@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path"
 
@@ -12,8 +13,9 @@ import (
 )
 
 type SetupConfig struct {
-	JiraConfig   *JiraConfig   `yaml:"jira,omitempty"`
-	LinearConfig *LinearConfig `yaml:"linear,omitempty"`
+	JiraConfig    *JiraConfig    `yaml:"jira,omitempty"`
+	LinearConfig  *LinearConfig  `yaml:"linear,omitempty"`
+	AgilityConfig *AgilityConfig `yaml:"agility,omitempty"`
 
 	// RepositoryConfig a global config for all repositories.
 	// Per-repository config properties will override this one.
@@ -30,6 +32,11 @@ func (c *SetupConfig) SetDefaults() {
 		c.LinearConfig = &LinearConfig{}
 	}
 	c.LinearConfig.SetDefaults()
+
+	if c.AgilityConfig == nil {
+		c.AgilityConfig = &AgilityConfig{}
+	}
+	c.AgilityConfig.SetDefaults()
 }
 
 type JiraConfig struct {
@@ -90,6 +97,29 @@ func (c *LinearConfig) Validate() error {
 	return nil
 }
 
+type AgilityConfig struct {
+	Endpoint string `yaml:"endpoint,omitempty"`
+	APIKey   string `yaml:"api_key"`
+}
+
+func (c *AgilityConfig) SetDefaults() {
+	if c.APIKey == "" {
+		c.APIKey = os.Getenv("AGILITY_API_KEY")
+	}
+}
+
+func (c *AgilityConfig) Validate() error {
+	var merr *multierror.Error
+	if c.APIKey == "" {
+		merr = multierror.Append(merr, errors.New("Agility API key is missing"))
+	}
+	if err := merr.ErrorOrNil(); err != nil {
+		return errors.Wrap(err, "Invalid Agility config, please run 'gh prx setup provider agility'")
+	}
+
+	return nil
+}
+
 func LoadSetupConfig() (*SetupConfig, error) {
 	log.Debug("Loading setup config")
 	cfgDir, err := getSetupConfigDir()
@@ -98,6 +128,9 @@ func LoadSetupConfig() (*SetupConfig, error) {
 	}
 
 	filename := path.Join(cfgDir, "config.yaml")
+
+	fmt.Sprintf("Config path %s", filename)
+
 	if _, err := os.Stat(filename); err != nil {
 		if os.IsNotExist(err) {
 			cfg := &SetupConfig{}
@@ -115,6 +148,8 @@ func LoadSetupConfig() (*SetupConfig, error) {
 	}
 
 	cfg.SetDefaults()
+
+	fmt.Sprintf("Config load %s", cfg)
 
 	return cfg, nil
 }

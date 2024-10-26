@@ -36,6 +36,14 @@ func NewIssueProvider(cfg *config.RepositoryConfig, setupCfg *config.SetupConfig
 		return &LinearIssueProvider{
 			Config: setupCfg.LinearConfig,
 		}, nil
+	case "agility":
+		if err := setupCfg.AgilityConfig.Validate(); err != nil {
+			return nil, err
+		}
+
+		return &AgilityIssueProvider{
+			Config: setupCfg.AgilityConfig,
+		}, nil
 	default:
 		return nil, config.ErrInvalidProvider
 	}
