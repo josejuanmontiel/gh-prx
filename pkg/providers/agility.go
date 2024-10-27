@@ -25,6 +25,26 @@ func (p *AgilityIssueProvider) Name() string {
 	return "agility"
 }
 
+type AgilityIssueQuery struct {
+	From   string                 `json:"from"`
+	Select []string               `json:"select"`
+	Where  map[string]interface{} `json:"where",omitempty`
+}
+
+type AgilityIssues [][]AgilityIssue
+
+type StoryID struct {
+	Oid string `json:"_oid"`
+}
+
+type AgilityIssue struct {
+	Oid         string  `json:"_oid"`
+	Name        string  `json:"Name"`
+	Number      string  `json:"Number"`
+	ID          StoryID `json:"ID"`
+	Description string  `json:"Description"`
+}
+
 func (p *AgilityIssueProvider) Get(ctx context.Context, id string) (*models.Issue, error) {
 
 	query := AgilityIssueQuery{
@@ -49,50 +69,32 @@ func (p *AgilityIssueProvider) Get(ctx context.Context, id string) (*models.Issu
 }
 
 func (p *AgilityIssueProvider) List(ctx context.Context) ([]*models.Issue, error) {
-	query := AgilityIssues{}
-	// WIP
-	// issues := &AgilityIssues{}
-	// if err := p.query(ctx, path, issues); err != nil {
-	// 	return nil, err
-	// }
+	query := AgilityIssueQuery{
+		From: "Story",
+		Select: []string{
+			"Name",
+			"Number",
+			"ID",
+			"Description",
+		},
+		Where: map[string]interface{}{},
+	}
 
-	result := make([]*models.Issue, len(query[0]))
-	for i, issue := range query[0] {
+	issue := AgilityIssues{}
+	if err := p.query(ctx, "/query.v1", query, &issue); err != nil {
+		return nil, err
+	}
+
+	result := make([]*models.Issue, len(issue[0]))
+	for i, issue := range issue[0] {
 		result[i] = issue.ToIssue()
 	}
 
 	return result, nil
 }
 
-type AgilityIssueQuery struct {
-	From   string                 `json:"from"`
-	Select []string               `json:"select"`
-	Where  map[string]interface{} `json:"where"`
-}
-
-type AgilityIssues [][]AgilityIssue
-
-type StoryID struct {
-	Oid string `json:"_oid"`
-}
-
-type AgilityIssue struct {
-	Oid         string  `json:"_oid"`
-	Name        string  `json:"Name"`
-	Number      string  `json:"Number"`
-	ID          StoryID `json:"ID"`
-	Description string  `json:"Description"`
-}
-
 func (i *AgilityIssue) ToIssue() *models.Issue {
-	// issueType := ""
-	// for _, label := range i.Labels.Nodes {
-	// 	if it, ok := LabelToType[strings.ToLower(label.Name)]; ok {
-	// 		issueType = it
-
-	// 		break
-	// 	}
-	// }
+	// issueType := LabelToType["enhancement"]
 
 	// Expresión regular para eliminar etiquetas HTML
 	re := regexp.MustCompile(`<[^>]*>`)
@@ -100,10 +102,10 @@ func (i *AgilityIssue) ToIssue() *models.Issue {
 	plain = strings.ReplaceAll(plain, " ", "_")
 
 	return &models.Issue{
-		Key:   i.ID.Oid,
+		Key:   i.Number,
 		Title: i.Name,
 		// Type:                issueType,
-		SuggestedBranchName: plain,
+		// SuggestedBranchName: plain,
 	}
 }
 
