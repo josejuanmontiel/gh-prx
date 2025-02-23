@@ -72,6 +72,7 @@ func TemplateBranchName(cfg *config.RepositoryConfig, issue *models.Issue) (stri
 	if err := t.Execute(&tpl, map[string]interface{}{
 		"Type":        issueType,
 		"Issue":       issue.Key,
+		"Parent":      issue.Parent,
 		"Description": issue.NormalizedTitle(),
 	}); err != nil {
 		return "", errors.Wrap(err, "Failed to template branch name")

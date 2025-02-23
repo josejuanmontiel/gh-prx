@@ -41,7 +41,7 @@ func TestAgilityIssueProvider_Get(t *testing.T) {
 					Oid:         "123",
 					Name:        "Test Issue",
 					Number:      "1",
-					ID:          providers.StoryID{Oid: "123"},
+					ID:          providers.Oid{Oid: "123"},
 					Description: "This is a test issue",
 				},
 			},

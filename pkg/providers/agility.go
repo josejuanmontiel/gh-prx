@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -38,12 +36,15 @@ type Oid struct {
 }
 
 type AgilityIssue struct {
-	Oid         string `json:"_oid"`
-	ID          Oid    `json:"ID"`
-	Name        string `json:"Name"`
-	Description string `json:"Description"`
-	Timebox     Oid    `json:"Timebox"`
-	Parent      Oid    `json:"Parent"`
+	Oid          string `json:"_oid"`
+	ID           Oid    `json:"ID"`
+	Number       string `json:"Number"`
+	Name         string `json:"Name"`
+	Description  string `json:"Description"`
+	Timebox      Oid    `json:"Timebox"`
+	Parent       Oid    `json:"Parent"`
+	ParentNumber string `json:"Parent.Number"`
+	ParentName   string `json:"Parent.Name"`
 }
 
 func (p *AgilityIssueProvider) Get(ctx context.Context, id string) (*models.Issue, error) {
@@ -51,13 +52,18 @@ func (p *AgilityIssueProvider) Get(ctx context.Context, id string) (*models.Issu
 	query := AgilityIssueQuery{
 		From: "Task",
 		Select: []string{
-			"Name",
-			"Number",
 			"ID",
+			"Number",
+			"Name",
 			"Description",
+			"Owners",
+			"Timebox",
+			"Parent",
+			"Parent.Number",
+			"Parent.Name",
 		},
 		Where: map[string]interface{}{
-			"ID": id,
+			"Number": id,
 		},
 	}
 
@@ -74,11 +80,14 @@ func (p *AgilityIssueProvider) List(ctx context.Context) ([]*models.Issue, error
 		From: "Task",
 		Select: []string{
 			"ID",
+			"Number",
 			"Name",
 			"Description",
 			"Owners",
 			"Timebox",
 			"Parent",
+			"Parent.Number",
+			"Parent.Name",
 		},
 		Where: map[string]interface{}{},
 	}
@@ -105,17 +114,11 @@ func (p *AgilityIssueProvider) List(ctx context.Context) ([]*models.Issue, error
 func (i *AgilityIssue) ToIssue() *models.Issue {
 	issueType := LabelToType["enhancement"]
 
-	// Expresión regular para eliminar etiquetas HTML
-	re := regexp.MustCompile(`<[^>]*>`)
-	plain := re.ReplaceAllString(i.Name, "")
-	plain = strings.ReplaceAll(plain, " ", "_")
-	plain = strings.ReplaceAll(plain, ":", "_")
-
 	return &models.Issue{
-		Key:                 i.ID.Oid,
-		Title:               i.Name,
-		Type:                issueType,
-		SuggestedBranchName: plain,
+		Key:    i.Number,
+		Title:  i.Name,
+		Parent: i.ParentNumber,
+		Type:   issueType,
 	}
 }
 
