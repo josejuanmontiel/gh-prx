@@ -1,5 +1,5 @@
 issue:
-  provider: github
+  provider: 
 branch:
   pattern: "{{.Type}}\\/({{.Issue}}-)?{{.Description}}"
   variable_patterns:
