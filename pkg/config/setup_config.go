@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"path"
 
@@ -100,6 +99,7 @@ func (c *LinearConfig) Validate() error {
 type AgilityConfig struct {
 	Endpoint string `yaml:"endpoint,omitempty"`
 	APIKey   string `yaml:"api_key"`
+	Owner    string `yaml:"owner"`
 }
 
 func (c *AgilityConfig) SetDefaults() {
@@ -129,8 +129,6 @@ func LoadSetupConfig() (*SetupConfig, error) {
 
 	filename := path.Join(cfgDir, "config.yaml")
 
-	fmt.Sprintf("Config path %s", filename)
-
 	if _, err := os.Stat(filename); err != nil {
 		if os.IsNotExist(err) {
 			cfg := &SetupConfig{}
@@ -148,8 +146,6 @@ func LoadSetupConfig() (*SetupConfig, error) {
 	}
 
 	cfg.SetDefaults()
-
-	fmt.Sprintf("Config load %s", cfg)
 
 	return cfg, nil
 }

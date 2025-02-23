@@ -12,10 +12,11 @@ import (
 )
 
 type ProviderOpts struct {
-	Endpoint string
-	User     string
-	Token    string
-	APIKey   string
+	Endpoint    string
+	User        string
+	Token       string
+	APIKey      string
+	TicketOwner string
 }
 
 func NewProviderCmd() *cobra.Command {
@@ -97,6 +98,8 @@ func setupProvider(_ context.Context, provider string, opts *ProviderOpts) error
 
 		cfg.AgilityConfig.Endpoint = opts.Endpoint
 		cfg.AgilityConfig.APIKey = opts.APIKey
+		cfg.AgilityConfig.Owner = opts.TicketOwner
+
 	default:
 		return config.ErrInvalidProvider
 	}

@@ -33,22 +33,23 @@ type AgilityIssueQuery struct {
 
 type AgilityIssues [][]AgilityIssue
 
-type StoryID struct {
+type Oid struct {
 	Oid string `json:"_oid"`
 }
 
 type AgilityIssue struct {
-	Oid         string  `json:"_oid"`
-	Name        string  `json:"Name"`
-	Number      string  `json:"Number"`
-	ID          StoryID `json:"ID"`
-	Description string  `json:"Description"`
+	Oid         string `json:"_oid"`
+	ID          Oid    `json:"ID"`
+	Name        string `json:"Name"`
+	Description string `json:"Description"`
+	Timebox     Oid    `json:"Timebox"`
+	Parent      Oid    `json:"Parent"`
 }
 
 func (p *AgilityIssueProvider) Get(ctx context.Context, id string) (*models.Issue, error) {
 
 	query := AgilityIssueQuery{
-		From: "Story",
+		From: "Task",
 		Select: []string{
 			"Name",
 			"Number",
@@ -56,7 +57,7 @@ func (p *AgilityIssueProvider) Get(ctx context.Context, id string) (*models.Issu
 			"Description",
 		},
 		Where: map[string]interface{}{
-			"Number": id,
+			"ID": id,
 		},
 	}
 
@@ -70,14 +71,22 @@ func (p *AgilityIssueProvider) Get(ctx context.Context, id string) (*models.Issu
 
 func (p *AgilityIssueProvider) List(ctx context.Context) ([]*models.Issue, error) {
 	query := AgilityIssueQuery{
-		From: "Story",
+		From: "Task",
 		Select: []string{
-			"Name",
-			"Number",
 			"ID",
+			"Name",
 			"Description",
+			"Owners",
+			"Timebox",
+			"Parent",
 		},
 		Where: map[string]interface{}{},
+	}
+
+	if p.Config.Owner != "" {
+		query.Where = map[string]interface{}{
+			"Owners": p.Config.Owner,
+		}
 	}
 
 	issue := AgilityIssues{}
@@ -94,18 +103,19 @@ func (p *AgilityIssueProvider) List(ctx context.Context) ([]*models.Issue, error
 }
 
 func (i *AgilityIssue) ToIssue() *models.Issue {
-	// issueType := LabelToType["enhancement"]
+	issueType := LabelToType["enhancement"]
 
 	// Expresión regular para eliminar etiquetas HTML
 	re := regexp.MustCompile(`<[^>]*>`)
-	plain := re.ReplaceAllString(i.Description, "")
+	plain := re.ReplaceAllString(i.Name, "")
 	plain = strings.ReplaceAll(plain, " ", "_")
+	plain = strings.ReplaceAll(plain, ":", "_")
 
 	return &models.Issue{
-		Key:   i.Number,
-		Title: i.Name,
-		// Type:                issueType,
-		// SuggestedBranchName: plain,
+		Key:                 i.ID.Oid,
+		Title:               i.Name,
+		Type:                issueType,
+		SuggestedBranchName: plain,
 	}
 }
 
