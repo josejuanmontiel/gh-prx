@@ -27,6 +27,7 @@ type AgilityIssueQuery struct {
 	From   string                 `json:"from"`
 	Select []string               `json:"select"`
 	Where  map[string]interface{} `json:"where",omitempty`
+	Sort   []string               `json:"sort"`
 }
 
 type AgilityIssues [][]AgilityIssue
@@ -82,19 +83,25 @@ func (p *AgilityIssueProvider) List(ctx context.Context) ([]*models.Issue, error
 			"ID",
 			"Number",
 			"Name",
+			"Status.Name",
 			"Description",
 			"Owners",
 			"Timebox",
 			"Parent",
 			"Parent.Number",
 			"Parent.Name",
+			"CreateDate",
 		},
 		Where: map[string]interface{}{},
+		Sort: []string{
+			"-CreateDate",
+		},
 	}
 
 	if p.Config.Owner != "" {
 		query.Where = map[string]interface{}{
-			"Owners": p.Config.Owner,
+			"Owners":      p.Config.Owner,
+			"Status.Name": "In Progress",
 		}
 	}
 
