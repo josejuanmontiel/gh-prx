@@ -1,10 +1,11 @@
 issue:
   provider: 
 branch:
-  pattern: "{{.Type}}\\/({{.Issue}}-)?{{.Description}}"
-  variable_patterns:
+  pattern: "{{.Type}}\\/({{.Parent}}-)?{{.Description}}" # Branch name pattern
+  variable_patterns: # A map of patterns to match for each template variable
     Type: "fix|feat|chore|docs|refactor|test|style|build|ci|perf|revert"
-    Issue: "[0-9]+"
-    Description: ".*"
+    Parent: "S-[0-9]+"
+    Description: "[a-z_]*"
+  token_separators: ["_"] # Characters used to separate branch name into a human-readable string
 pr:
-  title: "{{.Type}}{{with .Issue}}({{.}}){{end}}: {{humanize .Description}}"
+  title: "{{.Type}}{{with .Parent}}({{.}}){{end}}: {{humanize .Description}}"
