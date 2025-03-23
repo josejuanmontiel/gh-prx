@@ -192,7 +192,7 @@ To setup, run `gh prx setup provider linear --api-key <api-key>`.
 
 Alternatively, set the `LINEAR_API_KEY` env var.
 
-### Linear
+### Agility
 
 To setup, run `gh prx setup provider agility --api-key <api-key>`.
 
